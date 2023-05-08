@@ -5,10 +5,11 @@ from typing import List
 # If this library isn't installed run 'pip install chess'
 
 # Uncomment these if you want to save gifs of the games
-# from cairosvg import svg2png
-# import imageio
-# import os
-# import glob
+from cairosvg import svg2png
+import imageio
+import os
+import glob
+
 
 def gameToState(ascii_state) -> List[chr]:
     state = [[]]
@@ -22,21 +23,22 @@ def gameToState(ascii_state) -> List[chr]:
 
 class ChessGame:
 
-    def __init__(self, max_depth: int, board=chess.Board(), game=None, move_number=0):
+    def __init__(self, board=chess.Board(), game=None, move_number=0, clone=False):
         """
         The constructor which sets up all the basic aspects that will be used in the class
         :param max_depth: the max depth that the alpha beta algorithm will go
         """
         if game is None:
             game = []
-        self._max_depth = max_depth
         self._board = board
         self._state = gameToState(str(board))
         self._game = game
-        # self._game.append(str(chess.svg.board(self._board)))
+        self._clone = clone
+        if not clone:
+            self._game.append(str(chess.svg.board(self._board)))
         self._move_number = move_number
 
-    def is_cutoff(self, depth=0) -> bool:
+    def is_cutoff(self) -> bool:
         """
         The is_cutOff method checks if the game can continue
         :param depth: the current depth of the alpha beta algorithm
@@ -44,7 +46,8 @@ class ChessGame:
         """
         game = self._board
         game_state = game.is_checkmate() or game.is_stalemate() or game.is_insufficient_material()
-        return game_state or depth >= self._max_depth or self._move_number >= 100
+        game_repeat = game.can_claim_threefold_repetition() or game.can_claim_fifty_moves()
+        return game_state or game_repeat# or self._move_number >= 100
 
     def is_checkmate(self) -> bool:
         """
@@ -67,12 +70,13 @@ class ChessGame:
         :return: a copy of the self
         """
         self._board.push(move)
-        # self._game.append(str(chess.svg.board(self._board, arrows=[(move.from_square, move.to_square)])))
+        if not self._clone:
+            self._game.append(str(chess.svg.board(self._board, arrows=[(move.from_square, move.to_square)])))
         self._move_number += 1
         return self
 
     def copyGame(self):
-        return ChessGame(self._max_depth, self._board.copy(), self._game, self._move_number)
+        return ChessGame(self._board.copy(), [], self._move_number, True)
 
     def getState(self) -> List[chr]:
         return self._state

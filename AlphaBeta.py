@@ -3,7 +3,7 @@ import random
 from ChessGame import ChessGame
 from typing import List, Any
 
-DEPTH_LIMIT = 5
+DEPTH_LIMIT = 3
 
 
 def minimax_search(game: ChessGame, current_player: chr, evaluation) -> List[Any]:
@@ -34,8 +34,8 @@ def max_value(game: ChessGame, d: int, current_player: chr, evaluation) -> List[
     scores are calculated. This can either be 0 or 1.
     :return: value and action that corresponds to the optimal move
     """
-    if game.is_cutoff(d):
-        return [evaluation(game.getState(), current_player, game.getTurn(), game.is_checkmate()), None]
+    if game.is_cutoff() or d >= DEPTH_LIMIT:
+        return [evaluation(game.getState(), current_player, game.getTurn(), game.is_checkmate(), game.is_cutoff()), None]
     v = -2147483648
     move = None
     moveSet = []
@@ -62,8 +62,8 @@ def min_value(game: ChessGame, d: int, current_player: chr, evaluation) -> List[
     scores are calculated. This can either be 0 or 1.
     :return: value and action that corresponds to the optimal move
     """
-    if game.is_cutoff(d):
-        return [evaluation(game.getState(), current_player, game.getTurn(), game.is_checkmate()), None]
+    if game.is_cutoff() or d >= DEPTH_LIMIT:
+        return [evaluation(game.getState(), current_player, game.getTurn(), game.is_checkmate(), game.is_cutoff()), None]
     v = 2147483648
     move = None
     moveSet = []
