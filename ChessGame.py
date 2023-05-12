@@ -5,10 +5,10 @@ from typing import List
 # If this library isn't installed run 'pip install chess'
 
 # Uncomment these if you want to save gifs of the games
-from cairosvg import svg2png
-import imageio
-import os
-import glob
+# from cairosvg import svg2png
+# import imageio
+# import os
+# import glob
 
 
 def gameToState(ascii_state) -> List[chr]:
@@ -23,7 +23,8 @@ def gameToState(ascii_state) -> List[chr]:
 
 class ChessGame:
 
-    def __init__(self, board=chess.Board(), game=None, move_number=0, clone=False):
+    def __init__(self, board=chess.Board(),
+                 game=None, move_number=0, clone=False):
         """
         The constructor which sets up all the basic aspects that will be used in the class
         :param max_depth: the max depth that the alpha beta algorithm will go
@@ -71,7 +72,7 @@ class ChessGame:
         """
         self._board.push(move)
         if not self._clone:
-            self._game.append(str(chess.svg.board(self._board, arrows=[(move.from_square, move.to_square)])))
+            self._game.append(str(chess.svg.board(self._board, fill=dict.fromkeys(list(filter(lambda valid_move: not self._board.piece_at(valid_move) is None, map(lambda possible_move: possible_move.to_square, list(self._board.legal_moves)))), ("#cc0000cc" if self._move_number % 2 == 0 else "#4dff00")), arrows=[(move.from_square, move.to_square)])))
         self._move_number += 1
         return self
 
@@ -86,6 +87,9 @@ class ChessGame:
 
     def getTurn(self):
         return self._move_number
+
+    def getGame(self):
+        return self._board
 
     # def downloadGame(self, file_name):
     #     """
