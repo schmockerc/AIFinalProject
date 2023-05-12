@@ -36,6 +36,8 @@ if __name__ == '__main__':
     time_taken = []
     moves_available = []
     win_index = 0
+    player1 = ""
+    player2 = ""
     for i in range(1):
         game = ChessGame(clone=True, board=chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"))
 
@@ -52,6 +54,7 @@ if __name__ == '__main__':
 
                 # move = game.move(random.choice(game.getMoves()))
                 move = game.move(minimax_search(game, currentPlayer, basicEval)[1])
+                player1 = "BasicEval"
 
                 time_taken[-1].append(time.process_time() - start)
                 state_eval[-1].append(basicEval(game.getState(), currentPlayer, game.getTurn(), game.is_checkmate(), game.is_cutoff()))
@@ -59,6 +62,7 @@ if __name__ == '__main__':
             else:
 
                 game.move(random.choice(game.getMoves()))
+                player2 = "Random"
 
             print(game.getTurn())
             # print(currentPlayer + " - " + str(basicEval(game.getState(), currentPlayer, game.getTurn(), game.is_checkmate(), game.is_cutoff())))
@@ -77,18 +81,28 @@ if __name__ == '__main__':
 
     plt.pie(sizes, labels=labels, autopct='%1.1f%%', shadow=True, startangle=140)
     plt.axis('equal')
-    plt.savefig('randomVrandom.png')
+    plt.title('Outcome of 100 Games')
+    plt.savefig(player1 + 'V' + player2 + '.png')
     plt.clf()
 
     plt.plot(np.arange(0, len(state_eval[win_index])-1), np.array(state_eval[win_index][:-1]))
-    plt.savefig('randomVrandomBasicEval.png')
+    plt.title('Score per Move')
+    plt.ylabel('Score')
+    plt.xlabel('Move Number')
+    plt.savefig(player1 + 'V' + player2 + 'BasicEval.png')
     plt.clf()
 
     plt.plot(np.arange(0, len(time_taken[win_index])), np.array(time_taken[win_index]))
-    plt.savefig('randomTimeTake.png')
+    plt.title('Time per Move')
+    plt.ylabel('Time Taken (s)')
+    plt.xlabel('Move Number')
+    plt.savefig(player1 + 'V' + player2 + 'TimeTake.png')
     plt.clf()
 
     plt.plot(np.arange(0, len(moves_available[win_index])), np.array(moves_available[win_index]))
-    plt.savefig('randomMoveAmounts.png')
+    plt.title('Possible Moves per Move')
+    plt.ylabel('Amount of Possible Moves')
+    plt.xlabel('Move Number')
+    plt.savefig(player1 + 'V' + player2 + 'MoveAmounts.png')
 
     # game.downloadGame("gamePossible7")
