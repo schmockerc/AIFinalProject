@@ -1,8 +1,9 @@
 from typing import List
+from Evaluations import EvaluationFunction
 import random
 
 
-class ChessGame:
+class ChessGameProblem:
 
     """
     Class the represents a BitSTring Problem that can be solved with a Local Search.
