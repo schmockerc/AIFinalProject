@@ -134,7 +134,16 @@ class ChessGameProblem:
         :return: List of neighboring states
         """
         # TODO reimplement
-        return [current]
+
+        successors = []
+        n = self._genome_size
+        for i in range (n):
+            for j in range(8):
+                successor = [row.copy() for row in current]
+                successor[i][j] = 1 - successor[i][j]
+                successors.append(successor)
+
+        return [successors]
 
     def random_state(self) -> List[List[int]]:
         """
