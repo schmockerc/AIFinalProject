@@ -66,7 +66,15 @@ class ChessGameProblem:
         :return: child that is the combination of parent1 and parent2
         """
         #TODO Reimplement
-        return parent1
+
+        child = []
+        for i in range(len(parent1)):
+            row = []
+            for j in range(len(parent1[i])):
+                row.append(parent1[i][j] if random.random() < 0.5 else parent2[i][j])
+            child.append(row)
+        return child
+
 
     def single_point_crossover(self, parent1:List[List[int]], parent2:List[List[int]],
                                cross_point:int) -> List[List[int]]:
@@ -78,7 +86,16 @@ class ChessGameProblem:
         :return:child that is the combination of parent1 and parent2
         """
         #TODO Reimplement
-        return parent1
+
+        child = []
+        for i in range(len(parent1)):
+            row = []
+            if i < cross_point:
+                row = parent1[i]
+            else:
+                row = parent2[i]
+            child.append(row)
+        return child
 
     def mutate(self, child:List[List[int]]) -> List[List[int]]:
         """
@@ -89,6 +106,11 @@ class ChessGameProblem:
         # TODO: Implement a bit mutation where each bit has a 1/n chance of being mutated.
         #  To mutate a bit, call the mutate_bit method which is overridden in the child classes
         # TODO Reimplement
+
+        n = self._genome_size
+        for i in range(n):
+            if random.random() < 1 / n:
+                child = self.mutate_bit(child, i)
         return child
 
     def evaluation(self, current: List[List[int]]) -> float:
@@ -120,7 +142,8 @@ class ChessGameProblem:
         :return: New random list of 8x8 matrices that work as an evaluation function of size self._genome_size
         """
         #TODO reimplement
-        return [[0]]
+
+        return [[random.randint(0, 1) for _ in range(8)] for _ in range(self._genome_size)]
 
     def mutate_bit(self, child: List[List[int]], bit_index: int) -> List[List[int]]:
         """
@@ -131,4 +154,7 @@ class ChessGameProblem:
         :return: Genome that has been mutated
         """
         # TODO - reimplement
+
+        for i in range(len(child)):
+            child[i][bit_index] = 1 - child[i][bit_index]  # Flip the bit (0 to 1 or 1 to 0)
         return child
