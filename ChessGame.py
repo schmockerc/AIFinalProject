@@ -74,7 +74,7 @@ class ChessGame:
         if not self._clone:
             self._game.append(str(chess.svg.board(self._board, fill=dict.fromkeys(list(filter(lambda valid_move: not self._board.piece_at(valid_move) is None, map(lambda possible_move: possible_move.to_square, list(self._board.legal_moves)))), ("#cc0000cc" if self._move_number % 2 == 0 else "#4dff00")), arrows=[(move.from_square, move.to_square)])))
         self._move_number += 1
-        return self
+        return self.copyGame()
 
     def copyGame(self):
         return ChessGame(self._board.copy(), [], self._move_number, True)

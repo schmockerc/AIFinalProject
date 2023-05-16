@@ -1,21 +1,22 @@
 from typing import List
 from Evaluations import EvaluationFunction
+from ChessGame import ChessGame
+from AlphaBeta import alpha_beta_search
+import chess
 import random
 
 
 class ChessGameProblem:
 
     """
-    Class the represents a BitSTring Problem that can be solved with a Local Search.
-    Contains functions needed to manipulate a state (also called a genome) that is a python
-    lists of 1s and 0s.
+    Class that represents a set of evaluation functions for analyzing a chess game.
     """
 
     def __init__(self, genome_size:int):
         """
         Initializes a BitString type search problem. The state objects are
         python lists of 1s or 0s
-        :param genome_size: lenght of the state list
+        :param genome_size: length of the state list
         """
         self._genome_size = genome_size
 
@@ -30,7 +31,6 @@ class ChessGameProblem:
         :param num_parents: number of individuals to return from the selection
         :return:
         """
-        #TODO Check if this is correct
         ret = []
         for i in range(num_parents):
             index = self.fitness_proportionate_selection(current_population, weights)
@@ -46,8 +46,6 @@ class ChessGameProblem:
         Assumes bigger is better (maximization).
         :return: index of individual to choose
         """
-        # TODO: Implement fitness proportionate selection based on material from lecture
-        # TODO Check if works
         weights_sum = sum(weights)
         adjusted_weights = [weights[0] / weights_sum]
         for i in range(1, len(weights)):
@@ -65,16 +63,7 @@ class ChessGameProblem:
         :param parent2: 8x8 matrices that work as an evaluation function
         :return: child that is the combination of parent1 and parent2
         """
-        #TODO Reimplement
-
-        child = []
-        for i in range(len(parent1)):
-            row = []
-            for j in range(len(parent1[i])):
-                row.append(parent1[i][j] if random.random() < 0.5 else parent2[i][j])
-            child.append(row)
-        return child
-
+        return self.single_point_crossover(parent1, parent2, random.randint(0, 63))
 
     def single_point_crossover(self, parent1:List[List[int]], parent2:List[List[int]],
                                cross_point:int) -> List[List[int]]:
@@ -85,16 +74,11 @@ class ChessGameProblem:
         :param cross_point: Cross point.
         :return:child that is the combination of parent1 and parent2
         """
-        #TODO Reimplement
-
-        child = []
-        for i in range(len(parent1)):
-            row = []
-            if i < cross_point:
-                row = parent1[i]
-            else:
-                row = parent2[i]
-            child.append(row)
+        child = [[random.randint(-10, 10) for _ in range(8)] for _ in range(8)]
+        for i in range(0, 64):
+            row = (i - (i % 8)) // (8 if (i - (i % 8)) >= 7 else 1)
+            col = i % 8
+            child[row][col] = parent1[row][col] if i < cross_point else parent2[row][col]
         return child
 
     def mutate(self, child:List[List[int]]) -> List[List[int]]:
@@ -105,13 +89,12 @@ class ChessGameProblem:
         """
         # TODO: Implement a bit mutation where each bit has a 1/n chance of being mutated.
         #  To mutate a bit, call the mutate_bit method which is overridden in the child classes
-        # TODO Reimplement
-
-        n = self._genome_size
-        for i in range(n):
-            if random.random() < 1 / n:
-                child = self.mutate_bit(child, i)
-        return child
+        mutant = child.copy()
+        for row in range(8):
+            for col in range(8):
+                if random.random() < 1 / 64:
+                    mutant = self.mutate_bit(mutant, row, col)
+        return mutant
 
     def evaluation(self, current: List[List[int]]) -> float:
         """
@@ -125,7 +108,18 @@ class ChessGameProblem:
         #  If win 1/# of turns
         #  If lose -1/# of turns
         #  If tie 0.0
-        return 0.0
+        evaluation_function = EvaluationFunction("Genetic", current)
+        game = ChessGame(clone=True, board=chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"))
+        currentPlayer = ''
+        while not game.is_cutoff():
+            currentPlayer = 'W' if game.getTurn() % 2 == 0 else 'b'
+            if currentPlayer == 'W':
+                game.move(alpha_beta_search(game, currentPlayer, evaluation_function)[1])
+            else:
+                game.move(random.choice(game.getMoves()))
+        turn = game.getTurn()
+        print(turn)
+        return 0.0 if not game.is_checkmate() else (1.0/turn) if currentPlayer == 'W' else (-1.0/game.getTurn()())
 
     def successors(self, current: List[List[int]]) -> List[List[List[int]]]:
         """
@@ -133,28 +127,22 @@ class ChessGameProblem:
         :param current: 8x8 matrices that work as an evaluation function
         :return: List of neighboring states
         """
-        # TODO reimplement
-
         successors = []
         n = self._genome_size
         for i in range (n):
-            for j in range(8):
-                successor = [row.copy() for row in current]
-                successor[i][j] = 1 - successor[i][j]
-                successors.append(successor)
-
-        return [successors]
+            successor = current.copy()
+            successor[random.randint(0, 7)][random.randint(0, 7)] = random.randint(-10, 10)
+            successors.append(successor)
+        return successors
 
     def random_state(self) -> List[List[int]]:
         """
         Generates a random state (i.e. genome) of the given size.
         :return: New random list of 8x8 matrices that work as an evaluation function of size self._genome_size
         """
-        #TODO reimplement
+        return [[random.randint(-10, 10) for _ in range(8)] for _ in range(8)]
 
-        return [[random.randint(0, 1) for _ in range(8)] for _ in range(self._genome_size)]
-
-    def mutate_bit(self, child: List[List[int]], bit_index: int) -> List[List[int]]:
+    def mutate_bit(self, child: List[List[int]], bit_row: int, bit_col: int) -> List[List[int]]:
         """
         Performs a bit mutation on the passed in genome. Changes the
         bit at bit_index to one of the other moves in self._moves
@@ -162,8 +150,6 @@ class ChessGameProblem:
         :param bit_index: Which bit to mutate
         :return: Genome that has been mutated
         """
-        # TODO - reimplement
-
-        for i in range(len(child)):
-            child[i][bit_index] = 1 - child[i][bit_index]  # Flip the bit (0 to 1 or 1 to 0)
-        return child
+        mutant = child.copy()
+        mutant[bit_row][bit_col] = random.randint(-10, 10)
+        return mutant

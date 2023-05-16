@@ -17,6 +17,7 @@ def Genetic_Algorithm(problem: ChessGameProblem, initial: List[List[List[int]]],
             weights.append(problem.evaluation(individual))
             if weights[len(weights) - 1] == 1.0:
                 return individual
+        print(population[weights.index(max(weights))])
         population2 = []
         for i in range(0, len(population)):
             parent1 = population[problem.fitness_proportionate_selection(population, weights)]
@@ -25,6 +26,7 @@ def Genetic_Algorithm(problem: ChessGameProblem, initial: List[List[List[int]]],
             child = problem.mutate(child)
             population2.append(child)
         population = population2
+        print("Epoch: " + str(epoch))
     best_individual = population[0]
     for individual in population:
         if problem.evaluation(individual) > problem.evaluation(best_individual):
@@ -33,7 +35,7 @@ def Genetic_Algorithm(problem: ChessGameProblem, initial: List[List[List[int]]],
 
 
 if __name__ == '__main__':
-    pop_size = 20
+    pop_size = 10
     # Setup a simulation with a set population size
     chess_game_problem = ChessGameProblem(pop_size)
     # Runs the genetic algorithm and prints out the found solution to then be put into main.py

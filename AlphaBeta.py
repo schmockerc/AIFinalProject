@@ -15,6 +15,8 @@ def alpha_beta_search(game: ChessGame, current_player: chr, evaluation_function:
     :return: value and action that corresponds to the optimal move
     """
     value, move = max_value(game.copyGame(), 0, current_player, -9999, 9999, evaluation_function)
+    if move is None:
+        move = game.getMoves()[0]
     return [value, move]
 
 
@@ -41,9 +43,9 @@ def max_value(game: ChessGame, d: int, current_player: chr, alpha: int, beta: in
         v2, a2 = min_value(game.copyGame().move(a), d + 1, current_player, alpha, beta, evaluation_function)
         if v2 > v:
             v, move = v2, a
+        alpha = max(alpha, v)
         if v >= beta:
             return [v, move]
-        alpha = max(alpha, v)
     return [v, move]
 
 
