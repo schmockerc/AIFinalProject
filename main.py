@@ -13,7 +13,6 @@ import chess
 if __name__ == '__main__':
     game = None
     win_rate = {'W': 0, 'b': 0, 'D': 0}
-    state_eval = []
     time_taken = []
     moves_available = []
     win_index = 0
@@ -29,14 +28,13 @@ if __name__ == '__main__':
                     [3, -2, -8, -4, 0, 6, 6, -3],
                     [10, 8, -6, 7, 9, -2, -4, -10],
                     [2, -6, -3, 4, -6, 7, 0, 9]]
-    evaluation_function = EvaluationFunction("Genetic", genetic_eval)
+    evaluation_function = EvaluationFunction(player1 if player1 != "Random" else player2, genetic_eval)
     game_amount = 25
     beginning = time.process_time()
 
     for i in range(game_amount):
         game = ChessGame(clone=True, board=chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"))
 
-        state_eval.append([])
         time_taken.append([])
         moves_available.append([])
 
@@ -51,8 +49,6 @@ if __name__ == '__main__':
                 game.move(move)
 
                 time_taken[-1].append(time.process_time() - start)
-                state_eval[-1].append(evaluation_function.evalState(game.getState(), currentPlayer, game.getTurn(),
-                                                                    game.is_checkmate(), game.is_cutoff()))
 
             else:
                 # move = alpha_beta_search(game, currentPlayer, evaluation_function)[1]
@@ -80,24 +76,6 @@ if __name__ == '__main__':
     plt.axis('equal')
     plt.title('Outcome of ' + str(game_amount) + ' Games')
     plt.savefig('data\\' + player1 + 'V' + player2 + '.png')
-    plt.clf()
-
-    # Makes a plot of the score per move in the first game that player one won
-    plt.plot(np.arange(0, len(state_eval[win_index])-1), np.array(state_eval[win_index][:-1]))
-    plt.title('Score per Move')
-    plt.ylabel('Score')
-    plt.xlabel('Move Number')
-    plt.xlim(0, len(state_eval[win_index]) - 2)
-    plt.savefig('data\\' + player1 + 'V' + player2 + 'BasicEvalPerMove.png')
-    plt.clf()
-
-    # Makes a scatter plot of the score for each game
-    plt.scatter(np.array(list(map(lambda game_states: len(game_states)-1, state_eval))),
-                np.array(list(map(lambda state_list: sum(state_list[:-1]), state_eval))))
-    plt.title('Score per Game')
-    plt.ylabel('Score')
-    plt.xlabel('Move Amount per Game')
-    plt.savefig('data\\' + player1 + 'V' + player2 + 'BasicEvalPerGame.png')
     plt.clf()
 
     # Makes a plot of the time taken per move in the first game that player one won
